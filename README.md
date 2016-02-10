@@ -6,9 +6,9 @@ on excellent work by [@mscdex](https://github.com/mscdex) - [ssh2](https://githu
 which none of this would be possible.
 
 In all cases, this library will only ever perform a subset of what can be 
-accomplished with https://github.com/mscdex/ssh2 . If there's something more advanced you need
+accomplished with [ssh2](https://github.com/mscdex/ssh2). If there's something more advanced you need
 to do and this library won't support it, that one is probably the one to look 
-at.
+at. And certainly pull requests would be welcome, too!
 
 The easiest way to get the hang of this library is probably to look at the 
 `server_example.js` to start with, until this documentation gets more fully
