@@ -2,16 +2,16 @@
 # node-sftp-server
 
 A simple interface to be able to implement an SFTP Server using Node.js. Based 
-on excellent work by @mscdex - mscdex/ssh2 and mscdex/ssh2-streams. Without
+on excellent work by https://github.com/mscdex - https://github.com/mscdex/ssh2 and https://github.com/mscdex/ssh2-streams. Without
 which none of this would be possible.
 
 In all cases, this library will only ever perform a subset of what can be 
-accomplished with mscdex/ssh2 . If there's something more advanced you need
+accomplished with https://github.com/mscdex/ssh2 . If there's something more advanced you need
 to do and this library won't support it, that one is probably the one to look 
 at.
 
 The easiest way to get the hang of this library is probably to look at the 
-server_example.js to start with, until this documentation gets more fully
+`server_example.js` to start with, until this documentation gets more fully
 fleshed-out.
 
 # Usage
@@ -28,7 +28,7 @@ var SFTPServer=require('node-sftp-server');
 var myserver=new SFTPServer(); // some params should go there, like keys?
 ```
 
-This returns a new SFTPServer() object, which is an EventEmitter.
+This returns a new `SFTPServer()` object, which is an EventEmitter.
 
 ### methods 
 ```js
@@ -90,8 +90,8 @@ Many of the session events pass some kind of 'responder' or 'callback' object
 as a parameter. Those typically will have several error conditions that you can
 use to refuse the request - 
 
-`responder.fail()` - general failure?
-`responder.nofile()` - no such file or directory
-`responder.denied()` - access denied
-`responder.bad_message()` - protocol error; bad message (unusual)
-`responder.unsupported()` - operation not supported
+- `responder.fail()` - general failure?
+- `responder.nofile()` - no such file or directory
+- `responder.denied()` - access denied
+- `responder.bad_message()` - protocol error; bad message (unusual)
+- `responder.unsupported()` - operation not supported
