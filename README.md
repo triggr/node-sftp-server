@@ -95,3 +95,4 @@ use to refuse the request -
 - `responder.denied()` - access denied
 - `responder.bad_message()` - protocol error; bad message (unusual)
 - `responder.unsupported()` - operation not supported
+- `responder.ok()` - success
