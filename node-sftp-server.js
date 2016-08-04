@@ -44,7 +44,6 @@ Responder = (function(superClass) {
       return function(symbol) {
         return _this[methodname] = function() {
           _this.done = true;
-          console.warn("Going to invoke " + symbol + " on behalf of req: " + _this.req + ". value: " + ssh2.SFTP_STATUS_CODE[symbol]);
           return _this.sftpStream.status(_this.req, ssh2.SFTP_STATUS_CODE[symbol]);
         };
       };
@@ -72,7 +71,6 @@ DirectoryEmitter = (function(superClass) {
 
   DirectoryEmitter.prototype.request_directory = function(req) {
     this.req = req;
-    console.warn("Directory entry requested! " + req);
     if (!this.done) {
       return this.emit("dir");
     } else {
@@ -81,7 +79,6 @@ DirectoryEmitter = (function(superClass) {
   };
 
   DirectoryEmitter.prototype.file = function(name) {
-    console.warn("Returning a file: " + name + " for req: " + this.req);
     this.stopped = this.sftpStream.name(this.req, {
       filename: name.toString(),
       longname: name.toString(),
@@ -113,7 +110,6 @@ ContextWrapper = (function() {
     if (callback == null) {
       callback = function() {};
     }
-    console.warn("Accepting callback!!!!!");
     this.ctx.accept();
     return this.server._session_start_callback = callback;
   };
@@ -125,31 +121,27 @@ ContextWrapper = (function() {
 module.exports = SFTPServer = (function(superClass) {
   extend(SFTPServer, superClass);
 
-  function SFTPServer() {
+  function SFTPServer(privateKey) {
     this.server = new ssh2.Server({
-      privateKey: fs.readFileSync('ssh_host_rsa_key')
+      privateKey: fs.readFileSync(privateKey || 'ssh_host_rsa_key')
     }, (function(_this) {
       return function(client, info) {
         client.on('authentication', function(ctx) {
-          console.warn("Authentication!");
           _this.auth_wrapper = new ContextWrapper(ctx, _this);
           return _this.emit("connect", _this.auth_wrapper);
         });
         client.on('end', function() {
-          console.warn("Disconnection!");
           return _this.emit("end");
         });
         return client.on('ready', function(channel) {
           client._sshstream.debug = function(msg) {
             return "CLIENT ssh stream debug: " + msg;
           };
-          console.warn("Uhm, I guess we authenticated OK?");
           return client.on('session', function(accept, reject) {
             var session;
             session = accept();
             return session.on('sftp', function(accept, reject) {
               var sftpStream;
-              console.log('Client SFTP session?!?!!?!?!?');
               sftpStream = accept();
               session = new SFTPSession(sftpStream);
               return _this._session_start_callback(session);
@@ -238,11 +230,9 @@ SFTPSession = (function(superClass) {
     ref = this.constructor.Events;
     fn = (function(_this) {
       return function(event) {
-        console.warn("Now looking at event: " + event);
         return _this.sftpStream.on(event, function() {
           var args;
           args = 1 <= arguments.length ? slice.call(arguments, 0) : [];
-          console.warn("UNIVERSAL EVENT DETECTED: " + event + " - reqid: " + args[0]);
           return _this[event].apply(_this, args);
         });
       };
@@ -262,7 +252,6 @@ SFTPSession = (function(superClass) {
 
   SFTPSession.prototype.REALPATH = function(reqid, path) {
     var callback;
-    console.warn("REALPATH METHOD CALLED via reqid: " + reqid + " for path: " + path);
     if (EventEmitter.listenerCount(this, "realpath")) {
       callback = (function(_this) {
         return function(name) {
@@ -287,7 +276,7 @@ SFTPSession = (function(superClass) {
     if (EventEmitter.listenerCount(this, "stat")) {
       return this.emit("stat", path, kind, new Statter(this.sftpStream, reqid));
     } else {
-      console.warn("WARNING: No stat function for " + kind + ", all files exist!");
+      console.log("WARNING: No stat function for " + kind + ", all files exist!");
       return this.sftpStream.attrs(reqid, {
         filename: path,
         longname: path,
@@ -310,7 +299,6 @@ SFTPSession = (function(superClass) {
     diremit.on("newListener", (function(_this) {
       return function(event, listener) {
         var handle;
-        console.warn("New Listener detected!!!!! FREAK OUT!!!! " + event);
         if (event !== "dir") {
           return;
         }
@@ -330,7 +318,6 @@ SFTPSession = (function(superClass) {
   SFTPSession.prototype.READDIR = function(reqid, handle) {
     var ref;
     if (((ref = this.handles[handle]) != null ? ref.mode : void 0) !== "OPENDIR") {
-      console.warn("handle: " + handle + " is not an open directory!");
       return this.sftpStream.status(reqid, ssh2.SFTP_STATUS_CODE.NO_SUCH_FILE);
     }
     return this.handles[handle].responder.request_directory(reqid);
@@ -367,7 +354,6 @@ SFTPSession = (function(superClass) {
               return;
             }
             handle = _this.fetchhandle();
-            console.warn("INTERNAL _read METHOD INVOKED, DELAYED HANDLE IS BEING RETURNED: " + handle);
             _this.handles[handle] = {
               mode: "WRITE",
               path: pathname,
@@ -385,12 +371,9 @@ SFTPSession = (function(superClass) {
 
   SFTPSession.prototype.READ = function(reqid, handle, offset, length) {
     var badchunk, chunk, goodchunk;
-    console.warn("READ REQUEST FIRED - all we're doing is...asking for reqid: " + reqid + ", offset: " + offset + ", length: " + length);
     chunk = this.handles[handle].stream.read();
     if (chunk) {
-      console.warn("INSTA-CHUNK AVAIL!!!!");
       if ((chunk != null ? chunk.length : void 0) > length) {
-        console.warn("CHUNK IS TOOOOOOOOOOO BIIIIIIGGGGGGGG - you should split, return one, and 'unshift' the other?");
         badchunk = chunk.slice(length);
         goodchunk = chunk.slice(0, length);
         chunk = goodchunk;
@@ -403,16 +386,13 @@ SFTPSession = (function(superClass) {
       }
       return this.handles[handle].stream.once("readable", (function(_this) {
         return function() {
-          console.warn("READABLE FIRED?!");
           chunk = _this.handles[handle].stream.read();
           if ((chunk != null ? chunk.length : void 0) > length) {
-            console.warn("CHUNK IS TOOOOOOOOOOO BIIIIIIGGGGGGGG - you should split, return one, and 'unshift' the other?");
             badchunk = chunk.slice(length);
             goodchunk = chunk.slice(0, length);
             chunk = goodchunk;
             _this.handles[handle].stream.unshift(badchunk);
           }
-          console.warn("Read request gave us " + (chunk != null ? chunk.length : void 0) + " bytes!");
           if (chunk) {
             _this.sftpStream.data(reqid, chunk);
             return _this.handles[handle].stream.read(0);
@@ -420,7 +400,6 @@ SFTPSession = (function(superClass) {
             if (_this.handles[handle].stream.finished) {
               return _this.sftpStream.status(reqid, ssh2.SFTP_STATUS_CODE.EOF);
             } else {
-              console.warn("RETURNING EMPTY STREAM!");
               _this.sftpStream.data(reqid, new Buffer(""));
               return _this.handles[handle].stream.read(0);
             }
@@ -431,7 +410,6 @@ SFTPSession = (function(superClass) {
   };
 
   SFTPSession.prototype.WRITE = function(reqid, handle, offset, data) {
-    console.warn("WRITE DETECTED: handle: " + handle + ", offset: " + offset + ", datalength: " + data.length);
     this.handles[handle].stream.push(data);
     return this.sftpStream.status(reqid, ssh2.SFTP_STATUS_CODE.OK);
   };
@@ -441,7 +419,6 @@ SFTPSession = (function(superClass) {
     if (this.handles[handle]) {
       switch (this.handles[handle].mode) {
         case "OPENDIR":
-          console.warn("Closing directory for handle: " + handle);
           this.handles[handle].responder.emit("end");
           delete this.handles[handle];
           return this.sftpStream.status(reqid, ssh2.SFTP_STATUS_CODE.OK);
@@ -449,13 +426,10 @@ SFTPSession = (function(superClass) {
           delete this.handles[handle];
           return this.sftpStream.status(reqid, ssh2.SFTP_STATUS_CODE.OK);
         case "WRITE":
-          console.warn("CLOSE-WRITE");
           this.handles[handle].stream.push(null);
           delete this.handles[handle];
           return this.sftpStream.status(reqid, ssh2.SFTP_STATUS_CODE.OK);
         default:
-          console.warn("Handle: " + handle + " has data:");
-          console.dir(this.handles[handle]);
           return this.sftpStream.status(reqid, ssh2.SFTP_STATUS_CODE.FAILURE);
       }
     }
