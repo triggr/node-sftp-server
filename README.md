@@ -25,10 +25,11 @@ var SFTPServer=require('node-sftp-server');
 ### constructor
 
 ```js
-var myserver=new SFTPServer(); // some params should go there, like keys?
+var myserver=new SFTPServer("path_to_private_key_file");
 ```
 
-This returns a new `SFTPServer()` object, which is an EventEmitter.
+This returns a new `SFTPServer()` object, which is an EventEmitter. If the private
+key is not specified, the constructor will try to use `ssh_host_rsa_key`.
 
 ### methods 
 ```js
