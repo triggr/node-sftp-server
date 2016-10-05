@@ -29,7 +29,7 @@ var myserver=new SFTPServer("path_to_private_key_file");
 ```
 
 This returns a new `SFTPServer()` object, which is an EventEmitter. If the private
-key is not specified, the constructor will try to use `ssh_host_rsa_key`.
+key is not specified, the constructor will try to use `ssh_host_rsa_key` in the current directory.
 
 ### methods 
 ```js
