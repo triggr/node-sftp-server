@@ -58,31 +58,31 @@ is an EventEmitter as well.
 
 ### events
 
-`.on("realpath",path,callback)` - the server wants to determine the 'real' path
+`.on("realpath",function (path,callback) { })` - the server wants to determine the 'real' path
 for some user. For instance, if a user, when they log in, is immediately deposited
 into `/home/<username>/` - you could implement that here. Invoke the callback 
 with the calculated path - e.g. `callback("/home/"+username)`.  *TODO* - Error 
 management here!
 
-`.on("stat",path,statkind,statresponder)` - on any of STAT, LSTAT, or FSTAT
+`.on("stat",function (path,statkind,statresponder) { })` - on any of STAT, LSTAT, or FSTAT
 requests (the type will be passed in "statkind"). Return the status using
 `statresponder({mode: , uid:, gid: size: atime:, mtime: })`. Or use any of the 
-error methods in ##Error Callbacks below
+error methods in [Error Callbacks](#error-callbacks) below
   
-`.on("readdir",path,directory_emitter)` - on a directory listing attempt, the
+`.on("readdir",function (path,directory_emitter) { })` - on a directory listing attempt, the
 directory_emitter will keep emitting `dir` messages with a `responder` as a
 parameter, allowing you to respond with `responder.file(filename)` to return
 a file entry in the directory, or `responder.end()` if the directory listing
 is complete.
 
-`.on("readfile",path,writable_stream)` - the client is attempting to read a file
+`.on("readfile",function (path,writable_stream) { })` - the client is attempting to read a file
 from the server - place or pipe the contents of the file into the `writable_stream`.
 
-`.on("writefile",path,readable_stream)` - the client is attempting to write a 
+`.on("writefile",function (path,readable_stream) { })` - the client is attempting to write a 
 file to the server - the `readable_stream` corresponds to the actual file. You
 may `.pipe()` that into a writable stream of your own, or use it directly.
 
-`.on("delete",path,callback)` - the client wishes to delete a file. Respond with
+`.on("delete",function (path,callback) { })` - the client wishes to delete a file. Respond with
 `callback.ok()` or `callback.fail()` or any of the other error types
 
 ## Error Callbacks
