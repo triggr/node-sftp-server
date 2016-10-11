@@ -1,29 +1,23 @@
 "use strict";
 
-var ContextWrapper, DirectoryEmitter, EventEmitter, Readable, Responder, SFTP, SFTPFileStream, SFTPServer, SFTPSession, Statter, Transform, Writable, constants, fs, ssh2, ssh2_stream,
-  extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty,
   slice = [].slice;
 
-ssh2 = require('ssh2');
+var ssh2 = require('ssh2');
+var ssh2_stream = require('ssh2-streams');
+var SFTP = ssh2_stream.SFTPStream;
 
-ssh2_stream = require('ssh2-streams');
+var Readable = require('stream').Readable;
+var Writable = require('stream').Writable;
+var Transform = require('stream').Transform;
 
-SFTP = ssh2_stream.SFTPStream;
+var EventEmitter = require("events").EventEmitter;
+var fs = require('fs');
 
-Readable = require('stream').Readable;
+var constants = require('constants');
 
-Writable = require('stream').Writable;
-
-Transform = require('stream').Transform;
-
-EventEmitter = require("events").EventEmitter;
-
-fs = require('fs');
-
-constants = require('constants');
-
-Responder = (function(superClass) {
+var Responder = (function(superClass) {
   extend(Responder, superClass);
 
   Responder.Statuses = {
@@ -58,7 +52,7 @@ Responder = (function(superClass) {
 
 })(EventEmitter);
 
-DirectoryEmitter = (function(superClass) {
+var DirectoryEmitter = (function(superClass) {
   extend(DirectoryEmitter, superClass);
 
   function DirectoryEmitter(sftpStream1, req1) {
@@ -93,7 +87,7 @@ DirectoryEmitter = (function(superClass) {
 
 })(Responder);
 
-ContextWrapper = (function() {
+var ContextWrapper = (function() {
   function ContextWrapper(ctx1, server) {
     this.ctx = ctx1;
     this.server = server;
@@ -118,7 +112,7 @@ ContextWrapper = (function() {
 
 })();
 
-module.exports = SFTPServer = (function(superClass) {
+var SFTPServer = (function(superClass) {
   extend(SFTPServer, superClass);
 
   function SFTPServer(privateKey) {
@@ -160,7 +154,9 @@ module.exports = SFTPServer = (function(superClass) {
 
 })(EventEmitter);
 
-Statter = (function() {
+module.exports = SFTPServer
+
+var Statter = (function() {
   function Statter(sftpStream1, reqid1) {
     this.sftpStream = sftpStream1;
     this.reqid = reqid1;
@@ -204,7 +200,7 @@ Statter = (function() {
 
 })();
 
-SFTPFileStream = (function(superClass) {
+var SFTPFileStream = (function(superClass) {
   extend(SFTPFileStream, superClass);
 
   function SFTPFileStream() {
@@ -217,7 +213,7 @@ SFTPFileStream = (function(superClass) {
 
 })(Readable);
 
-SFTPSession = (function(superClass) {
+var SFTPSession = (function(superClass) {
   extend(SFTPSession, superClass);
 
   SFTPSession.Events = ["REALPATH", "STAT", "LSTAT", "OPENDIR", "CLOSE", "REMOVE", "READDIR", "OPEN", "READ", "WRITE"];
