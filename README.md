@@ -82,6 +82,10 @@ from the server - place or pipe the contents of the file into the `writable_stre
 file to the server - the `readable_stream` corresponds to the actual file. You
 may `.pipe()` that into a writable stream of your own, or use it directly.
 
+Or, you can return an error immediately using `readable_stream.status()` with a parameter of
+`fail`, `nofile`, `denied`, `bad_message`, or `unsupported`. See (examples/write_reject.js)
+for an example, and (examples/write_reject.txt) for a sample session output for details. 
+
 `.on("delete",function (path,callback) { })` - the client wishes to delete a file. Respond with
 `callback.ok()` or `callback.fail()` or any of the other error types
 

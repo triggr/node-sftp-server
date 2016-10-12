@@ -344,11 +344,14 @@ var SFTPSession = (function(superClass) {
       case "w":
         rs = new Readable();
         started = false;
-        rs._read = (function(_this) {
-          return function(bytes) {
-            if (started) {
-              return;
-            }
+        rs.last_request_id = null;
+        var _this = this;
+        rs._read = function(bytes) {
+          //only once the first _read() is invoked, do we
+          //respond with the handle for write-attempt
+          //that will start WRITE's flowing, which will populate
+          //this Readable's buffer getting filled via push()
+          if(!started) {
             handle = _this.fetchhandle();
             _this.handles[handle] = {
               mode: "WRITE",
@@ -357,8 +360,26 @@ var SFTPSession = (function(superClass) {
             };
             _this.sftpStream.handle(reqid, handle);
             return started = true;
-          };
-        })(this);
+          }
+          if(_this.last_request_id == null) {
+            _this.sftpStream.status(_this.last_request_id, ssh2.SFTP_STATUS_CODE.OK);
+            _this.last_request_id = null;
+          }
+        };
+        rs.status = function (name) {
+          var status=Responder.Statuses[name];
+          if(!status) {
+            throw new Error("Unknown status: "+name);
+          }
+          if(started) {
+            //stream is already started; mark the _next_ write request
+            //to fail
+            rs._next_error=status;
+          } else {
+            //stream wasn't started yet, reject the OPEN
+            _this.sftpStream.status(reqid, ssh2.SFTP_STATUS_CODE[status]);
+          }
+        };
         return this.emit("writefile", pathname, rs);
       default:
         return this.emit("error", new Error("Unknown open flags: " + stringflags));
@@ -406,8 +427,16 @@ var SFTPSession = (function(superClass) {
   };
 
   SFTPSession.prototype.WRITE = function(reqid, handle, offset, data) {
-    this.handles[handle].stream.push(data);
-    return this.sftpStream.status(reqid, ssh2.SFTP_STATUS_CODE.OK);
+    if(this.handles[handle].stream._next_error) {
+      return this.sftpStream.status(reqid, ssh2.SFTP_STATUS_CODE[this.handles[handle].stream._next_error]);
+    }
+    if(this.handles[handle].stream.push(data)) {
+      this.sftpStream.status(reqid, ssh2.SFTP_STATUS_CODE.OK);
+    } else {
+      //hold on to the reqid so that we can respond OK to it
+      //later, once a new _read() has been called on the stream
+      this.handles[handle].stream.last_request_id=reqid;
+    }
   };
 
   SFTPSession.prototype.CLOSE = function(reqid, handle) {
@@ -423,7 +452,7 @@ var SFTPSession = (function(superClass) {
           return this.sftpStream.status(reqid, ssh2.SFTP_STATUS_CODE.OK);
         case "WRITE":
           this.handles[handle].stream.push(null);
-          delete this.handles[handle];
+          //delete this.handles[handle]; //LEAK!!!!?
           return this.sftpStream.status(reqid, ssh2.SFTP_STATUS_CODE.OK);
         default:
           return this.sftpStream.status(reqid, ssh2.SFTP_STATUS_CODE.FAILURE);

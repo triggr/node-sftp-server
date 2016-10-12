@@ -2,7 +2,7 @@
 
 var fs = require('fs');
 
-var SFTPServer = require("./node-sftp-server");
+var SFTPServer = require("../node-sftp-server");
 
 var srv = new SFTPServer();
 

@@ -1,0 +1,26 @@
+# An example of trying to put my local file 'bigwords.txt' to a server running
+# the example write_reject.js server
+sftp -P 8022 brady@localhost
+brady@localhost's password: 
+Connected to localhost.
+sftp> ls
+bad_message  denied       end          fail         nofile       unsupported  
+sftp> put bigwords.txt bad_message
+Uploading bigwords.txt to ./bad_message
+remote open("./bad_message"): Bad message
+sftp> put bigwords.txt denied
+Uploading bigwords.txt to ./denied
+remote open("./denied"): Permission denied
+sftp> put bigwords.txt end
+Uploading bigwords.txt to ./end
+remote open("./end"): End of file
+sftp> put bigwords.txt fail
+Uploading bigwords.txt to ./fail
+remote open("./fail"): Failure
+sftp> put bigwords.txt nofile
+Uploading bigwords.txt to ./nofile
+remote open("./nofile"): No such file or directory
+sftp> put bigwords.txt unsupported
+Uploading bigwords.txt to ./unsupported
+remote open("./unsupported"): Operation unsupported
+sftp> 
