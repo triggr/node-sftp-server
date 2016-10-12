@@ -1,0 +1,30 @@
+sftp -P 8022 brady@localhost
+brady@localhost's password: 
+Connected to localhost.
+sftp> ls
+bad_message  denied       end          fail         nofile       unsupported  
+sftp> put bigwords.txt bad_message
+Uploading bigwords.txt to ./bad_message
+bigwords.txt                                                                                                                                                                                       100% 1025KB   1.0MB/s   00:01    
+Couldn't write to remote file "./bad_message": Bad message
+sftp> put bigwords.txt denied
+Uploading bigwords.txt to ./denied
+bigwords.txt                                                                                                                                                                                       100% 1025KB   1.0MB/s   00:00    
+Couldn't write to remote file "./denied": Permission denied
+sftp> put bigwords.txt end
+Uploading bigwords.txt to ./end
+bigwords.txt                                                                                                                                                                                       100% 1025KB   1.0MB/s   00:00    
+Couldn't write to remote file "./end": End of file
+sftp> put bigwords.txt fail
+Uploading bigwords.txt to ./fail
+bigwords.txt                                                                                                                                                                                       100% 1025KB   1.0MB/s   00:00    
+Couldn't write to remote file "./fail": Failure
+sftp> put bigwords.txt nofile
+Uploading bigwords.txt to ./nofile
+bigwords.txt                                                                                                                                                                                       100% 1025KB   1.0MB/s   00:00    
+Couldn't write to remote file "./nofile": No such file or directory
+sftp> put bigwords.txt unsupported
+Uploading bigwords.txt to ./unsupported
+bigwords.txt                                                                                                                                                                                       100% 1025KB   1.0MB/s   00:00    
+Couldn't write to remote file "./unsupported": Operation unsupported
+sftp> 

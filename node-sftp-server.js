@@ -31,10 +31,9 @@ var Responder = (function(superClass) {
   };
 
   function Responder(req1) {
-    var fn, methodname, ref, symbol;
     this.req = req1;
-    ref = this.constructor.Statuses;
-    fn = (function(_this) {
+    var ref = this.constructor.Statuses;
+    var fn = (function(_this) {
       return function(symbol) {
         return _this[methodname] = function() {
           _this.done = true;
@@ -42,8 +41,8 @@ var Responder = (function(superClass) {
         };
       };
     })(this);
-    for (methodname in ref) {
-      symbol = ref[methodname];
+    for (var methodname in ref) {
+      var symbol = ref[methodname];
       fn(symbol);
     }
   }
@@ -361,10 +360,10 @@ var SFTPSession = (function(superClass) {
             _this.sftpStream.handle(reqid, handle);
             return started = true;
           }
-          if(_this.last_request_id == null) {
+          if(_this.last_request_id != null) {
             _this.sftpStream.status(_this.last_request_id, ssh2.SFTP_STATUS_CODE.OK);
             _this.last_request_id = null;
-          }
+          }          
         };
         rs.status = function (name) {
           var status=Responder.Statuses[name];
