@@ -411,7 +411,7 @@ var SFTPSession = (function(superClass) {
   };
 
   SFTPSession.prototype.CLOSE = function(reqid, handle) {
-    return this.sftpStream.status(reqid, ssh2.SFTP_STATUS_CODE.OK);
+    //return this.sftpStream.status(reqid, ssh2.SFTP_STATUS_CODE.OK);
     if (this.handles[handle]) {
       switch (this.handles[handle].mode) {
         case "OPENDIR":
@@ -423,7 +423,7 @@ var SFTPSession = (function(superClass) {
           return this.sftpStream.status(reqid, ssh2.SFTP_STATUS_CODE.OK);
         case "WRITE":
           this.handles[handle].stream.push(null);
-          delete this.handles[handle];
+          //delete this.handles[handle]; //can't delete it while it's still going, right?
           return this.sftpStream.status(reqid, ssh2.SFTP_STATUS_CODE.OK);
         default:
           return this.sftpStream.status(reqid, ssh2.SFTP_STATUS_CODE.FAILURE);
