@@ -170,10 +170,7 @@ var Statter = (function() {
     return this.type = constants.S_IFDIR;
   };
 
-  Statter.prototype.file = function(attrs) {
-    if (attrs == null) {
-      attrs = {};
-    }
+  Statter.prototype.file = function() {
     return this.sftpStream.attrs(this.reqid, this._get_statblock());
   };
 
