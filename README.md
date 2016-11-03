@@ -125,6 +125,9 @@ may `.pipe()` that into a writable stream of your own, or use it directly.
 `.on("delete",function (path,callback) { })` - the client wishes to delete a file. Respond with
 `callback.ok()` or `callback.fail()` or any of the other error types
 
+`.on("rename",function (oldPath,newPath,callback) { })` - the client wishes to rename a file. Respond with
+`callback.ok()` or `callback.fail()` or any of the other error types
+
 ## Error Callbacks
 
 Many of the session events pass some kind of 'responder' or 'callback' object
