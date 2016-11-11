@@ -112,25 +112,31 @@ var ContextWrapper = (function() {
 
 })();
 
+var debug = function(msg) {};
+
 var SFTPServer = (function(superClass) {
   extend(SFTPServer, superClass);
 
-  function SFTPServer(privateKey) {
+  function SFTPServer(options) {
+    var privateKey = options.privateKeyFile || options; // Original constructor had just a privateKey string, so this preserves backwards compatibility.
+    if (options.debug) {
+      debug = function(msg) { console.log(msg); };
+    }
     this.server = new ssh2.Server({
-      privateKey: fs.readFileSync(privateKey || 'ssh_host_rsa_key')
+      privateKey: fs.readFileSync(privateKey || 'ssh_host_rsa_key'),
     }, (function(_this) {
       return function(client, info) {
         client.on('authentication', function(ctx) {
+          debug("SFTP Server: on('authentication')");
           _this.auth_wrapper = new ContextWrapper(ctx, _this);
           return _this.emit("connect", _this.auth_wrapper);
         });
         client.on('end', function() {
+          debug("SFTP Server: on('end')");
           return _this.emit("end");
         });
         return client.on('ready', function(channel) {
-          client._sshstream.debug = function(msg) {
-            return "CLIENT ssh stream debug: " + msg;
-          };
+          client._sshstream.debug = debug;
           return client.on('session', function(accept, reject) {
             var session;
             session = accept();
@@ -226,6 +232,7 @@ var SFTPSession = (function(superClass) {
         return _this.sftpStream.on(event, function() {
           var args;
           args = 1 <= arguments.length ? slice.call(arguments, 0) : [];
+          debug('DEBUG: SFTP Session Event: ' + event);
           return _this[event].apply(_this, args);
         });
       };
