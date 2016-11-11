@@ -25,11 +25,25 @@ var SFTPServer=require('node-sftp-server');
 ### constructor
 
 ```js
-var myserver=new SFTPServer("path_to_private_key_file");
+var myserver = new SFTPServer({ privateKeyFile: "path_to_private_key_file" });
 ```
 
 This returns a new `SFTPServer()` object, which is an EventEmitter. If the private
 key is not specified, the constructor will try to use `ssh_host_rsa_key` in the current directory.
+
+### debugging
+
+You can supply a `debug: true` option to the constructor like this:
+
+```js
+var myserver = new SFTPServer({
+    privateKeyFile: "path_to_private_key_file",
+    debug: true
+});
+```
+
+The `debug` option turns on console logging for SSH2 streams so you can see what's going on under the
+hood to help debug authentication problems, or other low level issues you may encounter. 
 
 ### methods 
 ```js
