@@ -118,8 +118,8 @@ var SFTPServer = (function(superClass) {
   extend(SFTPServer, superClass);
 
   function SFTPServer(options) {
-    var privateKey = options.privateKeyFile || options; // Original constructor had just a privateKey string, so this preserves backwards compatibility.
-    if (options.debug) {
+    var privateKey = (options && options.privateKeyFile) ? options.privateKeyFile : options; // Original constructor had just a privateKey string, so this preserves backwards compatibility.
+    if (options && options.debug) {
       debug = function(msg) { console.log(msg); };
     }
     this.server = new ssh2.Server({
