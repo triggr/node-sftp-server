@@ -340,10 +340,17 @@ var SFTPSession = (function(superClass) {
         handle = this.fetchhandle();
         this.handles[handle] = {
           mode: "READ",
+          finished: false,
           path: pathname,
-          stream: ts
+          stream: ts,
+          buffer: Buffer.alloc(0)
         };
         this.emit("readfile", pathname, ts);
+
+        ts.on('data', (data) => {
+          let buffer = this.handles[handle].buffer;
+          this.handles[handle].buffer = Buffer.concat([buffer, data], buffer.length + data.length);
+        })
         return this.sftpStream.handle(reqid, handle);
       case "w":
         rs = new Readable();
@@ -370,42 +377,28 @@ var SFTPSession = (function(superClass) {
   };
 
   SFTPSession.prototype.READ = function(reqid, handle, offset, length) {
-    var badchunk, chunk, goodchunk;
-    chunk = this.handles[handle].stream.read();
-    if (chunk) {
-      if ((chunk != null ? chunk.length : void 0) > length) {
-        badchunk = chunk.slice(length);
-        goodchunk = chunk.slice(0, length);
-        chunk = goodchunk;
-        this.handles[handle].stream.unshift(badchunk);
+    let localHandle = this.handles[handle];
+    if (localHandle.finished) {
+      return this.sftpStream.status(reqid, ssh2.SFTP_STATUS_CODE.EOF);
+    }
+
+    // Once our readstream is at eof, we're done reading into the
+    // buffer, and we know we can check against it for EOF state.
+    if (localHandle.stream.eof) {
+      if (offset + length >= localHandle.buffer.length) {
+        // Get ready for EOF next time.
+        localHandle.finished = true;
+
+        // Send the last chunk down the wire.
+        return this.sftpStream.data(reqid, localHandle.buffer.slice(offset, offset + length));
       }
-      return this.sftpStream.data(reqid, chunk);
+    }
+     
+    if (localHandle.buffer.length >= offset + length) {
+      return this.sftpStream.data(reqid, localHandle.buffer.slice(offset, offset + length));
     } else {
-      if (this.handles[handle].stream.eof) {
-        return this.sftpStream.status(reqid, ssh2.SFTP_STATUS_CODE.EOF);
-      }
-      return this.handles[handle].stream.once("readable", (function(_this) {
-        return function() {
-          chunk = _this.handles[handle].stream.read();
-          if ((chunk != null ? chunk.length : void 0) > length) {
-            badchunk = chunk.slice(length);
-            goodchunk = chunk.slice(0, length);
-            chunk = goodchunk;
-            _this.handles[handle].stream.unshift(badchunk);
-          }
-          if (chunk) {
-            _this.sftpStream.data(reqid, chunk);
-            return _this.handles[handle].stream.read(0);
-          } else {
-            if (_this.handles[handle].stream.finished) {
-              return _this.sftpStream.status(reqid, ssh2.SFTP_STATUS_CODE.EOF);
-            } else {
-              _this.sftpStream.data(reqid, new Buffer(""));
-              return _this.handles[handle].stream.read(0);
-            }
-          }
-        };
-      })(this));
+      // Wait for more data to become available.
+      setTimeout(() => this.READ(reqid, handle, offset, length), 50);
     }
   };
 
