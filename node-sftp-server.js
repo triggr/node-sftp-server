@@ -340,7 +340,6 @@ var SFTPSession = (function(superClass) {
         handle = this.fetchhandle();
         this.handles[handle] = {
           mode: "READ",
-          finished: false,
           path: pathname,
           stream: ts,
           buffer: Buffer.alloc(0)
@@ -378,18 +377,13 @@ var SFTPSession = (function(superClass) {
 
   SFTPSession.prototype.READ = function(reqid, handle, offset, length) {
     let localHandle = this.handles[handle];
-    if (localHandle.finished) {
-      return this.sftpStream.status(reqid, ssh2.SFTP_STATUS_CODE.EOF);
-    }
 
     // Once our readstream is at eof, we're done reading into the
     // buffer, and we know we can check against it for EOF state.
     if (localHandle.stream.eof) {
-      if (offset + length >= localHandle.buffer.length) {
-        // Get ready for EOF next time.
-        localHandle.finished = true;
-
-        // Send the last chunk down the wire.
+      if (offset >= localHandle.buffer.length) {
+        return this.sftpStream.status(reqid, ssh2.SFTP_STATUS_CODE.EOF);
+      } else {
         return this.sftpStream.data(reqid, localHandle.buffer.slice(offset, offset + length));
       }
     }
