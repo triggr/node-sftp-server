@@ -8,6 +8,8 @@ var ssh2 = require('ssh2');
 var ssh2_stream = require('ssh2-streams');
 var SFTP = ssh2_stream.SFTPStream;
 
+var tmp = require('tmp');
+
 var Readable = require('stream').Readable;
 var Writable = require('stream').Writable;
 var Transform = require('stream').Transform;
@@ -328,28 +330,24 @@ var SFTPSession = (function(superClass) {
     stringflags = SFTP.flagsToString(flags);
     switch (stringflags) {
       case "r":
-        ts = new Transform();
-        ts._transform = function(data, encoding, callback) {
-          this.push(data);
-          return callback();
-        };
-        ts._flush = function(cb) {
-          ts.eof = true;
-          return cb();
-        };
-        handle = this.fetchhandle();
-        this.handles[handle] = {
-          mode: "READ",
-          path: pathname,
-          stream: ts,
-          buffer: Buffer.alloc(0)
-        };
-        this.emit("readfile", pathname, ts);
-        ts.on("data", function(data) {
-          var buffer = this.handles[handle].buffer;
-          this.handles[handle].buffer = Buffer.concat([buffer, data], buffer.length + data.length);
+        // Create a temporary file to hold stream contents.
+        return tmp.file(function (err, tmpPath, fd) {
+          if (err) throw err;
+          handle = this.fetchhandle();
+          this.handles[handle] = {
+            mode: "READ",
+            path: pathname,
+            finished: false,
+            tmpPath: tmpPath,
+            tmpFile: fd
+          };
+          var writestream = fs.createWriteStream(tmpPath);
+          writestream.on("finish", function () {
+            this.handles[handle].finished = true;
+          }.bind(this));
+          this.emit("readfile", pathname, writestream);
+          return this.sftpStream.handle(reqid, handle);
         }.bind(this));
-        return this.sftpStream.handle(reqid, handle);
       case "w":
         rs = new Readable();
         started = false;
@@ -379,24 +377,36 @@ var SFTPSession = (function(superClass) {
 
     // Once our readstream is at eof, we're done reading into the
     // buffer, and we know we can check against it for EOF state.
-    if (localHandle.stream.eof) {
-      if (offset >= localHandle.buffer.length) {
-        return this.sftpStream.status(reqid, ssh2.SFTP_STATUS_CODE.EOF);
-      } else {
-        return this.sftpStream.data(reqid, localHandle.buffer.slice(offset, offset + length));
-      }
+    if (localHandle.finished) {
+      return fs.stat(localHandle.tmpPath, function(err, stats) {
+        if (err) throw err;
+
+        if (offset >= stats.size) {
+          return this.sftpStream.status(reqid, ssh2.SFTP_STATUS_CODE.EOF);
+        } else {
+          var buffer = Buffer.alloc(length);
+          return fs.read(localHandle.tmpFile, buffer, 0, length, offset, function (err, bytesRead, buffer) {
+            return this.sftpStream.data(reqid, buffer.slice(0, bytesRead));
+          }.bind(this));
+        }
+      }.bind(this));
     }
      
     // If we're not at EOF from the buffer yet, we either need to put more data
     // down the wire, or need to wait for more data to become available.
-    if (localHandle.buffer.length >= offset + length) {
-      return this.sftpStream.data(reqid, localHandle.buffer.slice(offset, offset + length));
-    } else {
-      // Wait for more data to become available.
-      setTimeout(function() {
-        this.READ(reqid, handle, offset, length);
-      }.bind(this), 50);
-    }
+    return fs.stat(localHandle.tmpPath, function(err, stats) {
+      if (stats.size >= offset + length) {
+        var buffer = Buffer.alloc(length);
+        return fs.read(localHandle.tmpFile, buffer, 0, length, offset, function (err, bytesRead, buffer) {
+          return this.sftpStream.data(reqid, buffer.slice(0, bytesRead));
+        }.bind(this));
+      } else {
+        // Wait for more data to become available.
+        setTimeout(function() {
+          this.READ(reqid, handle, offset, length);
+        }.bind(this), 50);
+      }
+    }.bind(this));
   };
 
   SFTPSession.prototype.WRITE = function(reqid, handle, offset, data) {
