@@ -346,10 +346,11 @@ var SFTPSession = (function(superClass) {
         };
         this.emit("readfile", pathname, ts);
 
-        ts.on('data', (data) => {
+        ts.on("data", function (data) {
           let buffer = this.handles[handle].buffer;
           this.handles[handle].buffer = Buffer.concat([buffer, data], buffer.length + data.length);
-        })
+        }.bind(this));
+
         return this.sftpStream.handle(reqid, handle);
       case "w":
         rs = new Readable();
@@ -376,7 +377,7 @@ var SFTPSession = (function(superClass) {
   };
 
   SFTPSession.prototype.READ = function(reqid, handle, offset, length) {
-    let localHandle = this.handles[handle];
+    var localHandle = this.handles[handle];
 
     // Once our readstream is at eof, we're done reading into the
     // buffer, and we know we can check against it for EOF state.
@@ -388,11 +389,15 @@ var SFTPSession = (function(superClass) {
       }
     }
      
+    // If we're not at EOF from the buffer yet, we either need to put more data
+    // down the wire, or need to wait for more data to become available.
     if (localHandle.buffer.length >= offset + length) {
       return this.sftpStream.data(reqid, localHandle.buffer.slice(offset, offset + length));
     } else {
       // Wait for more data to become available.
-      setTimeout(() => this.READ(reqid, handle, offset, length), 50);
+      setTimeout(function() {
+        this.READ(reqid, handle, offset, length);
+      }.bind(this), 50);
     }
   };
 
