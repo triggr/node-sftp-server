@@ -345,12 +345,10 @@ var SFTPSession = (function(superClass) {
           buffer: Buffer.alloc(0)
         };
         this.emit("readfile", pathname, ts);
-
-        ts.on("data", function (data) {
-          let buffer = this.handles[handle].buffer;
+        ts.on("data", function(data) {
+          var buffer = this.handles[handle].buffer;
           this.handles[handle].buffer = Buffer.concat([buffer, data], buffer.length + data.length);
         }.bind(this));
-
         return this.sftpStream.handle(reqid, handle);
       case "w":
         rs = new Readable();
