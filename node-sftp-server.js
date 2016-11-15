@@ -9,6 +9,7 @@ var ssh2_stream = require('ssh2-streams');
 var SFTP = ssh2_stream.SFTPStream;
 
 var tmp = require('tmp');
+tmp.setGracefulCleanup();
 
 var Readable = require('stream').Readable;
 var Writable = require('stream').Writable;
