@@ -121,6 +121,8 @@ var SFTPServer = (function(superClass) {
   extend(SFTPServer, superClass);
 
   function SFTPServer(options) {
+    // Expose options for the other classes to read.
+    SFTPServer.options = options;
     var privateKey = (options && options.privateKeyFile) ? options.privateKeyFile : options; // Original constructor had just a privateKey string, so this preserves backwards compatibility.
     if (options && options.debug) {
       debug = function(msg) { console.log(msg); };
@@ -332,7 +334,9 @@ var SFTPSession = (function(superClass) {
     switch (stringflags) {
       case "r":
         // Create a temporary file to hold stream contents.
-        return tmp.file(function (err, tmpPath, fd) {
+        var options = {};
+        if (SFTPServer.options.temporaryFileDirectory) options.dir = SFTPServer.options.temporaryFileDirectory;
+        return tmp.file(options, function (err, tmpPath, fd) {
           if (err) throw err;
           handle = this.fetchhandle();
           this.handles[handle] = {

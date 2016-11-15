@@ -45,6 +45,20 @@ var myserver = new SFTPServer({
 The `debug` option turns on console logging for SSH2 streams so you can see what's going on under the
 hood to help debug authentication problems, or other low level issues you may encounter. 
 
+### temporary files
+
+The server stores temporary files while users are downloading. These are handled by the [tmp library](https://www.npmjs.com/package/tmp).
+Permissions for these files are set to 600 (read and write for the node user, no permission for any other users) and 
+are stored in your platform's default temporary file location. You can control which directory these files appear in
+by passing the `temporaryFileDirectory` to the constructor like this:
+
+```js
+var myserver = new SFTPServer({
+    privateKeyFile: "path_to_private_key_file",
+    temporaryFileDirectory: "/some/temporary/file/path/here"
+});
+```
+
 ### methods 
 ```js
 .listen(portnumber)
