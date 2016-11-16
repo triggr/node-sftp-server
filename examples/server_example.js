@@ -45,8 +45,10 @@ srv.on("connect", function(auth) {
       return fs.createReadStream("/tmp/grumple.txt").pipe(writestream);
     });
     return session.on("writefile", function(path, readstream) {
+      console.warn("WRITE FILE HAS BEEN ATTEMPTED!");
       var something;
       something = fs.createWriteStream("/tmp/garbage");
+      readstream.on("end",function() {console.warn("Writefile request has come to an end!!!")});
       return readstream.pipe(something);
     });
   });

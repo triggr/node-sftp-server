@@ -25,11 +25,39 @@ var SFTPServer=require('node-sftp-server');
 ### constructor
 
 ```js
-var myserver=new SFTPServer("path_to_private_key_file");
+var myserver = new SFTPServer({ privateKeyFile: "path_to_private_key_file" });
 ```
 
 This returns a new `SFTPServer()` object, which is an EventEmitter. If the private
 key is not specified, the constructor will try to use `ssh_host_rsa_key` in the current directory.
+
+### debugging
+
+You can supply a `debug: true` option to the constructor like this:
+
+```js
+var myserver = new SFTPServer({
+    privateKeyFile: "path_to_private_key_file",
+    debug: true
+});
+```
+
+The `debug` option turns on console logging for SSH2 streams so you can see what's going on under the
+hood to help debug authentication problems, or other low level issues you may encounter. 
+
+### temporary files
+
+The server stores temporary files while users are downloading. These are handled by the [tmp library](https://www.npmjs.com/package/tmp).
+Permissions for these files are set to 600 (read and write for the node user, no permission for any other users) and 
+are stored in your platform's default temporary file location. You can control which directory these files appear in
+by passing the `temporaryFileDirectory` to the constructor like this:
+
+```js
+var myserver = new SFTPServer({
+    privateKeyFile: "path_to_private_key_file",
+    temporaryFileDirectory: "/some/temporary/file/path/here"
+});
+```
 
 ### methods 
 ```js
@@ -65,10 +93,50 @@ with the calculated path - e.g. `callback("/home/"+username)`.  *TODO* - Error
 management here!
 
 `.on("stat",function (path,statkind,statresponder) { })` - on any of STAT, LSTAT, or FSTAT
-requests (the type will be passed in "statkind"). Return the status using
-`statresponder({mode: , uid:, gid: size: atime:, mtime: })`. Or use any of the 
-error methods in [Error Callbacks](#error-callbacks) below
-  
+requests (the type will be passed in "statkind"). The statresponder object is a `Statter`
+object from the source code. Communicate status back by calling methods and setting properties
+on the object like this:
+
+#### Directory
+```js
+session.on('stat', function(path, statkind, statresponder) {
+    statresponder.is_directory();    // Tells statresponder that we're describing a directory.
+    statresponder.permissions = 755; // Octal permissions, like what you'd send to a chmod command
+    statresponder.uid = 1;           // User ID that owns the file.
+    statresponder.gid = 1;           // Group ID that owns the file.
+    statresponder.size = 0;          // File size in bytes.
+    statresponder.atime = 123456;    // Created at (unix style timestamp in seconds-from-epoch).
+    statresponder.mtime = 123456;    // Modified at (unix style timestamp in seconds-from-epoch).
+
+    stat.file();   // Tells the statter to actually send the values above down the wire.
+});
+```
+
+#### File
+```js
+session.on('stat', function(path, statkind, statresponder) {
+    statresponder.is_file();         // Tells statresponder that we're describing a file.
+    statresponder.permissions = 644; // Octal permissions, like what you'd send to a chmod command
+    statresponder.uid = 1;           // User ID that owns the file.
+    statresponder.gid = 1;           // Group ID that owns the file.
+    statresponder.size = 1234;       // File size in bytes.
+    statresponder.atime = 123456;    // Created at (unix style timestamp in seconds-from-epoch).
+    statresponder.mtime = 123456;    // Modified at (unix style timestamp in seconds-from-epoch).
+
+    stat.file();   // Tells the statter to actually send the values above down the wire.
+});
+```
+
+#### Errors
+
+You can also respond with file not found messages like this:
+
+```js
+session.on('stat', function(path, statkind, statresponder) {
+    statresponder.noFile(); // Tells the statter to send a file not found stat down the wire.
+});
+```
+
 `.on("readdir",function (path,directory_emitter) { })` - on a directory listing attempt, the
 directory_emitter will keep emitting `dir` messages with a `responder` as a
 parameter, allowing you to respond with `responder.file(filename)` to return
@@ -87,6 +155,9 @@ Or, you can return an error immediately using `readable_stream.status()` with a 
 for an example, and (examples/write_reject.txt) for a sample session output for details. 
 
 `.on("delete",function (path,callback) { })` - the client wishes to delete a file. Respond with
+`callback.ok()` or `callback.fail()` or any of the other error types
+
+`.on("rename",function (oldPath,newPath,callback) { })` - the client wishes to rename a file. Respond with
 `callback.ok()` or `callback.fail()` or any of the other error types
 
 ## Error Callbacks
