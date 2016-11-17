@@ -64,7 +64,7 @@ var DirectoryEmitter = (function(superClass) {
     this.req = req1 != null ? req1 : null;
     this.stopped = false;
     this.done = false;
-    DirectoryEmitter.__super__.constructor.call(this, this.req);
+    DirectoryEmitter.__super__.constructor.call(this, sftpStream1, this.req);
   }
 
   DirectoryEmitter.prototype.request_directory = function(req) {
