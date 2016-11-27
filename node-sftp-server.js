@@ -33,9 +33,10 @@ var Responder = (function(superClass) {
     "unsupported": "OP_UNSUPPORTED"
   };
 
-  function Responder(req1) {
+  function Responder(sftpStream1, req1) {
     var fn, methodname, ref, symbol;
     this.req = req1;
+    this.sftpStream = sftpStream1;
     ref = this.constructor.Statuses;
     fn = (function(_this) {
       return function(symbol) {
@@ -63,7 +64,7 @@ var DirectoryEmitter = (function(superClass) {
     this.req = req1 != null ? req1 : null;
     this.stopped = false;
     this.done = false;
-    DirectoryEmitter.__super__.constructor.call(this, this.req);
+    DirectoryEmitter.__super__.constructor.call(this, sftpStream1, this.req);
   }
 
   DirectoryEmitter.prototype.request_directory = function(req) {
@@ -442,11 +443,11 @@ var SFTPSession = (function(superClass) {
   };
 
   SFTPSession.prototype.REMOVE = function(reqid, handle) {
-    return this.emit("delete", new Responder(reqid));
+    return this.emit("delete", new Responder(this.sftpStream, reqid));
   };
 
   SFTPSession.prototype.RENAME = function(reqid, oldPath, newPath) {
-    return this.emit("rename", oldPath, newPath, new Responder(reqid));
+    return this.emit("rename", oldPath, newPath, new Responder(this.sftpStream, reqid));
   };
 
   return SFTPSession;
