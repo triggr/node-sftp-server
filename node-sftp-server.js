@@ -446,8 +446,8 @@ var SFTPSession = (function(superClass) {
     }
   };
 
-  SFTPSession.prototype.REMOVE = function(reqid, handle) {
-    return this.emit("delete", this.handles[handle].path, new Responder(this.sftpStream, reqid));
+  SFTPSession.prototype.REMOVE = function(reqid, path) {
+    return this.emit("delete", path, new Responder(this.sftpStream, reqid));
   };
 
   SFTPSession.prototype.RENAME = function(reqid, oldPath, newPath) {
