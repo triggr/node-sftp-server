@@ -226,7 +226,7 @@ var SFTPFileStream = (function(superClass) {
 var SFTPSession = (function(superClass) {
   extend(SFTPSession, superClass);
 
-  SFTPSession.Events = ["REALPATH", "STAT", "LSTAT", "OPENDIR", "CLOSE", "REMOVE", "READDIR", "OPEN", "READ", "WRITE", "RENAME"];
+  SFTPSession.Events = ["REALPATH", "STAT", "LSTAT", "FSTAT", "OPENDIR", "CLOSE", "REMOVE", "READDIR", "OPEN", "READ", "WRITE", "RENAME"];
 
   function SFTPSession(sftpStream1) {
     var event, fn, i, len, ref;
@@ -298,6 +298,10 @@ var SFTPSession = (function(superClass) {
 
   SFTPSession.prototype.LSTAT = function(reqid, path) {
     return this.do_stat(reqid, path, 'LSTAT');
+  };
+
+  SFTPSession.prototype.FSTAT = function(reqid, handle) {
+    return this.do_stat(reqid, this.handles[handle].path, 'FSTAT');
   };
 
   SFTPSession.prototype.OPENDIR = function(reqid, path) {
