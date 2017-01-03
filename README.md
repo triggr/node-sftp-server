@@ -139,7 +139,7 @@ session.on('stat', function(path, statkind, statresponder) {
 
 `.on("readdir",function (path,directory_emitter) { })` - on a directory listing attempt, the
 directory_emitter will keep emitting `dir` messages with a `responder` as a
-parameter, allowing you to respond with `responder.file(filename)` to return
+parameter, allowing you to respond with `responder.file(filename, attrs)` to return
 a file entry in the directory, or `responder.end()` if the directory listing
 is complete.
 
