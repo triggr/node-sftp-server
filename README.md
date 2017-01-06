@@ -143,6 +143,37 @@ parameter, allowing you to respond with `responder.file(filename, attrs)` to ret
 a file entry in the directory, or `responder.end()` if the directory listing
 is complete.
 
+```js
+// Attrs object format could contain:
+var fs = require('fs');
+
+/*
+* Explanation for mode
+* 
+* You may use type bit from fs lib constants and add permissions to it
+* 
+* Permissions mask would look like 0oXXX where XXX is file octal permissions
+* 
+* If you'd like to explain directory use:
+* fs.constants.S_IFDIR | 0oXXX
+* 
+* If you'd like to explain file use:
+* fs.constants.S_IFREG | 0oXXX
+* 
+*/
+
+var attrs = {
+	'mode': fs.constants.S_IFDIR | 0o644 // Bit mask of file type and permissions 
+	'permissions': 644, // Octal permissions, like what you'd send to a chmod command
+	'uid': 1, // User ID that owns the file.
+	'gid': 1, // Group ID that owns the file.
+	'size': 1234, // File size in bytes.
+	'atime': 123456, // Created at (unix style timestamp in seconds-from-epoch).
+	'mtime': 123456 // Modified at (unix style timestamp in seconds-from-epoch).
+}
+
+```
+
 `.on("readfile",function (path,writable_stream) { })` - the client is attempting to read a file
 from the server - place or pipe the contents of the file into the `writable_stream`.
 
