@@ -77,7 +77,7 @@ var DirectoryEmitter = (function(superClass) {
   };
 
   DirectoryEmitter.prototype.file = function(name, attrs) {
-    if(typeof attrs === 'undefined'){
+    if (typeof attrs === 'undefined') {
       attrs = {};
     }
     this.stopped = this.sftpStream.name(this.req, {
