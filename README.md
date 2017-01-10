@@ -108,7 +108,7 @@ session.on('stat', function(path, statkind, statresponder) {
     statresponder.atime = 123456;    // Created at (unix style timestamp in seconds-from-epoch).
     statresponder.mtime = 123456;    // Modified at (unix style timestamp in seconds-from-epoch).
 
-    stat.file();   // Tells the statter to actually send the values above down the wire.
+    statresponder.file();   // Tells the statter to actually send the values above down the wire.
 });
 ```
 
@@ -123,7 +123,7 @@ session.on('stat', function(path, statkind, statresponder) {
     statresponder.atime = 123456;    // Created at (unix style timestamp in seconds-from-epoch).
     statresponder.mtime = 123456;    // Modified at (unix style timestamp in seconds-from-epoch).
 
-    stat.file();   // Tells the statter to actually send the values above down the wire.
+    statresponder.file();   // Tells the statter to actually send the values above down the wire.
 });
 ```
 
