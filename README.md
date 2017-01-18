@@ -100,13 +100,13 @@ on the object like this:
 #### Directory
 ```js
 session.on('stat', function(path, statkind, statresponder) {
-    statresponder.is_directory();    // Tells statresponder that we're describing a directory.
-    statresponder.permissions = 755; // Octal permissions, like what you'd send to a chmod command
-    statresponder.uid = 1;           // User ID that owns the file.
-    statresponder.gid = 1;           // Group ID that owns the file.
-    statresponder.size = 0;          // File size in bytes.
-    statresponder.atime = 123456;    // Created at (unix style timestamp in seconds-from-epoch).
-    statresponder.mtime = 123456;    // Modified at (unix style timestamp in seconds-from-epoch).
+    statresponder.is_directory();      // Tells statresponder that we're describing a directory.
+    statresponder.permissions = 0o755; // Octal permissions, like what you'd send to a chmod command
+    statresponder.uid = 1;             // User ID that owns the file.
+    statresponder.gid = 1;             // Group ID that owns the file.
+    statresponder.size = 0;            // File size in bytes.
+    statresponder.atime = 123456;      // Created at (unix style timestamp in seconds-from-epoch).
+    statresponder.mtime = 123456;      // Modified at (unix style timestamp in seconds-from-epoch).
 
     statresponder.file();   // Tells the statter to actually send the values above down the wire.
 });
@@ -115,13 +115,13 @@ session.on('stat', function(path, statkind, statresponder) {
 #### File
 ```js
 session.on('stat', function(path, statkind, statresponder) {
-    statresponder.is_file();         // Tells statresponder that we're describing a file.
-    statresponder.permissions = 644; // Octal permissions, like what you'd send to a chmod command
-    statresponder.uid = 1;           // User ID that owns the file.
-    statresponder.gid = 1;           // Group ID that owns the file.
-    statresponder.size = 1234;       // File size in bytes.
-    statresponder.atime = 123456;    // Created at (unix style timestamp in seconds-from-epoch).
-    statresponder.mtime = 123456;    // Modified at (unix style timestamp in seconds-from-epoch).
+    statresponder.is_file();           // Tells statresponder that we're describing a file.
+    statresponder.permissions = 0o644; // Octal permissions, like what you'd send to a chmod command
+    statresponder.uid = 1;             // User ID that owns the file.
+    statresponder.gid = 1;             // Group ID that owns the file.
+    statresponder.size = 1234;         // File size in bytes.
+    statresponder.atime = 123456;      // Created at (unix style timestamp in seconds-from-epoch).
+    statresponder.mtime = 123456;      // Modified at (unix style timestamp in seconds-from-epoch).
 
     statresponder.file();   // Tells the statter to actually send the values above down the wire.
 });
@@ -133,7 +133,7 @@ You can also respond with file not found messages like this:
 
 ```js
 session.on('stat', function(path, statkind, statresponder) {
-    statresponder.noFile(); // Tells the statter to send a file not found stat down the wire.
+    statresponder.nofile(); // Tells the statter to send a file not found stat down the wire.
 });
 ```
 
@@ -164,7 +164,7 @@ var fs = require('fs');
 
 var attrs = {
 	'mode': fs.constants.S_IFDIR | 0o644 	// Bit mask of file type and permissions 
-	'permissions': 644, 					// Octal permissions, like what you'd send to a chmod command
+	'permissions': 0o644, 					// Octal permissions, like what you'd send to a chmod command
 	'uid': 1, 								// User ID that owns the file.
 	'gid': 1, 								// Group ID that owns the file.
 	'size': 1234, 							// File size in bytes.
