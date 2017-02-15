@@ -1,6 +1,6 @@
 {
   "name": "node-sftp-server",
-  "version": "0.2.6",
+  "version": "0.2.7",
   "description": "Node.js SFTP Server bindings to implement your own SFTP Server",
   "main": "node-sftp-server.js",
   "scripts": {
@@ -15,6 +15,9 @@
     "sftp-server"
   ],
   "author": "Brady Wetherington <brady@briteverify.com>",
+  "contributors": [
+    "Jonathan Yarbor <jon@nodecraft.com> (https://nodecraft.com)"
+  ],
   "license": "ISC",
   "dependencies": {
     "ssh2": "^0.4.13",

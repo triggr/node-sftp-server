@@ -136,6 +136,10 @@ var SFTPServer = (function(superClass) {
       privateKey: fs.readFileSync(options.privateKeyFile)
     }, (function(_this) {
       return function(client, info) {
+        client.on('error', function(err) {
+          debug("SFTP Server: error");
+          return _this.emit("error", err);
+        });
         client.on('authentication', function(ctx) {
           debug("SFTP Server: on('authentication')");
           _this.auth_wrapper = new ContextWrapper(ctx, _this);
