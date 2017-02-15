@@ -54,6 +54,9 @@ srv.on("connect", function(auth) {
   });
 });
 
+srv.on("error", function() {
+  return console.warn("Example server encountered an error");
+});
 srv.on("end", function() {
   return console.warn("Example says user disconnected");
 });

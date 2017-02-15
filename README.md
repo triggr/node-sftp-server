@@ -78,6 +78,8 @@ as its parameter.
 
 `end` - emitted when the user disconnects from the server.
 
+`error` - emitted when the ssh server throws an error. passes error object
+
 ## Session Object
 
 This object is passed to you when you call `.accept(callback)` - your callback
