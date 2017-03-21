@@ -103,8 +103,8 @@ var ContextWrapper = (function() {
     this.password = this.ctx.password;
   }
 
-  ContextWrapper.prototype.reject = function() {
-    return this.ctx.reject();
+  ContextWrapper.prototype.reject = function(methodsLeft, isPartial) {
+    return this.ctx.reject(methodsLeft, isPartial);
   };
 
   ContextWrapper.prototype.accept = function(callback) {
@@ -133,7 +133,7 @@ var SFTPServer = (function(superClass) {
     }
     SFTPServer.options = options;
     this.server = new ssh2.Server({
-      privateKey: fs.readFileSync(options.privateKeyFile)
+      hostKeys: [fs.readFileSync(options.privateKeyFile)]
     }, (function(_this) {
       return function(client, info) {
         client.on('error', function(err) {

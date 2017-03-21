@@ -11,7 +11,7 @@ srv.listen(8022);
 srv.on("connect", function(auth) {
   console.warn("authentication attempted");
   if (auth.method !== 'password' || auth.username !== "brady" || auth.password !== "test") {
-    return auth.reject();
+    return auth.reject(['password']);
   }
   console.warn("We haven't *outhright* accepted yet...");
   var username = auth.username;
