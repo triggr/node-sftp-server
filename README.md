@@ -14,6 +14,12 @@ The easiest way to get the hang of this library is probably to look at the
 `server_example.js` to start with, until this documentation gets more fully
 fleshed-out.
 
+# Installation
+
+```
+npm install --save node-sftp-server
+```
+
 # Usage
 
 ```js
