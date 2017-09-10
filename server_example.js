@@ -8,8 +8,8 @@ var srv = new SFTPServer();
 
 srv.listen(8022);
 
-srv.on("connect", function(auth) {
-  console.warn("authentication attempted");
+srv.on("connect", function(auth, info) {
+  console.warn("authentication attempted, client info is: "+JSON.stringify(info));
   if (auth.method !== 'password' || auth.username !== "brady" || auth.password !== "test") {
     return auth.reject(['password']);
   }
