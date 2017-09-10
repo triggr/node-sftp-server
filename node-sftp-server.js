@@ -143,7 +143,7 @@ var SFTPServer = (function(superClass) {
         client.on('authentication', function(ctx) {
           debug("SFTP Server: on('authentication')");
           _this.auth_wrapper = new ContextWrapper(ctx, _this);
-          return _this.emit("connect", _this.auth_wrapper);
+          return _this.emit("connect", _this.auth_wrapper, info);
         });
         client.on('end', function() {
           debug("SFTP Server: on('end')");
