@@ -87,9 +87,11 @@ The second is a client-info parameter, which has elements like:
     - protocol (example: "2.0")
     - software (example: "FileZilla_3.27.1")
 
-With the context object, you can call `.reject()` to reject the connection, or call `.accept(callback)`
-to work with the new connection. The callback will be passed a Session object
-as its parameter.
+With the context object, you can call `.reject(methodsLeft, isPartial)` to reject the connection, or call `.accept(callback)`
+to work with the new connection. The accept callback will be passed a Session object
+as its parameter. The `methodsLeft` parameter is an array of acceptable authentication
+methods, two of which are 'password' and 'none'. `isPartial` is whether or not the 
+attempt should be considered a partial success.
 
 `end` - emitted when the user disconnects from the server.
 
