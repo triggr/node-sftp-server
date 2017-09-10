@@ -72,13 +72,22 @@ var myserver = new SFTPServer({
 Listens for an SFTP client to connect to the server on this port.
 
 ### events
-`connect` - passes along a simple context object which has - 
+`connect` - passes along two parameters. The first is a simple context object which has - 
 
 - username: 
 - password:
 - method: 
 
-You can call `.reject()` to reject the connection, or call `.accept(callback)`
+The second is a client-info parameter, which has elements like:
+{"ip":"::1","header":{"identRaw":"SSH-2.0-FileZilla_3.27.1","versions":{"protocol":"2.0","software":"FileZilla_3.27.1"}}}
+- ip (the remote IP)
+- header
+  - identRaw (client identification string, like "SSH-2.0-FileZilla_3.27.1")
+  - versions
+    - protocol (example: "2.0")
+    - software (example: "FileZilla_3.27.1")
+
+With the context object, you can call `.reject()` to reject the connection, or call `.accept(callback)`
 to work with the new connection. The callback will be passed a Session object
 as its parameter.
 
