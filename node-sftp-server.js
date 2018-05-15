@@ -241,7 +241,7 @@ var SFTPSession = (function(superClass) {
     "REALPATH", "STAT", "LSTAT", "FSTAT",
     "OPENDIR", "CLOSE", "REMOVE", "READDIR",
     "OPEN", "READ", "WRITE", "RENAME",
-    "MKDIR", "RMDIR"
+    "MKDIR", "RMDIR", "SETSTAT"
   ];
 
   function SFTPSession(sftpStream1) {
@@ -477,6 +477,10 @@ var SFTPSession = (function(superClass) {
 
   SFTPSession.prototype.RMDIR = function(reqid, path) {
     return this.emit("rmdir", path, new Responder(this.sftpStream, reqid));
+  };
+  
+  SFTPSession.prototype.SETSTAT = function(reqid, path) {
+    return this.emit("setstat", path, new Responder(this.sftpStream, reqid));
   };
 
   return SFTPSession;
