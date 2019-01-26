@@ -129,11 +129,15 @@ var SFTPServer = (function(superClass) {
     if (!options) options = { privateKeyFile: 'ssh_host_rsa_key' };
     if (typeof options === 'string') options = { privateKeyFile: options }; // Original constructor had just a privateKey string, so this preserves backwards compatibility.
     if (options.debug) {
-      debug = function(msg) { console.log(msg); };
+      debug = options.debug instanceof Function ?
+        options.debug :
+        function(msg) { console.log(msg); };
     }
+    let {privateKeyFile, temporaryFileDirectory, ...serverOptions} = options;
     SFTPServer.options = options;
     this.server = new ssh2.Server({
-      hostKeys: [fs.readFileSync(options.privateKeyFile)]
+      hostKeys: [fs.readFileSync(privateKeyFile)],
+      ...serverOptions,
     }, (function(_this) {
       return function(client, info) {
         client.on('error', function(err) {
@@ -414,7 +418,7 @@ var SFTPSession = (function(superClass) {
         }
       }.bind(this));
     }
-     
+
     // If we're not at EOF from the buffer yet, we either need to put more data
     // down the wire, or need to wait for more data to become available.
     return fs.stat(localHandle.tmpPath, function(err, stats) {
