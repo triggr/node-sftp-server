@@ -20,8 +20,8 @@
   ],
   "license": "ISC",
   "dependencies": {
-    "ssh2": "0.5.x",
-    "ssh2-streams": "^0.0.21",
+    "ssh2": "0.8.x",
+    "ssh2-streams": "^0.4.2",
     "tmp": "^0.0.30"
   },
   "bugs": {
