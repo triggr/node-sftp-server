@@ -67,6 +67,12 @@ var DirectoryEmitter = (function(superClass) {
     DirectoryEmitter.__super__.constructor.call(this, sftpStream1, this.req);
   }
 
+  DirectoryEmitter.prototype._get_longname = function(filename, attrs) {
+    // TODO: completely hardcoded for our needs.
+    var permissions = attrs.type === fs.constants.S_IFDIR ? 'dr--r--r--' : '-r--r--r--';
+    return `${permissions}  1 staff  staff   64  Jan  1  2000 ${filename}`;
+  }
+
   DirectoryEmitter.prototype.request_directory = function(req) {
     this.req = req;
     if (!this.done) {
@@ -82,7 +88,7 @@ var DirectoryEmitter = (function(superClass) {
     }
     this.stopped = this.sftpStream.name(this.req, {
       filename: name.toString(),
-      longname: name.toString(),
+      longname: this._get_longname(name.toString(), attrs),
       attrs: attrs
     });
     if (!this.stopped && !this.done) {
@@ -478,7 +484,7 @@ var SFTPSession = (function(superClass) {
   SFTPSession.prototype.RMDIR = function(reqid, path) {
     return this.emit("rmdir", path, new Responder(this.sftpStream, reqid));
   };
-  
+
   SFTPSession.prototype.SETSTAT = function(reqid, path) {
     return this.emit("setstat", path, new Responder(this.sftpStream, reqid));
   };
